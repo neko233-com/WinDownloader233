@@ -8,7 +8,6 @@
   import SettingsPanel from './components/SettingsPanel.svelte';
   import { AppService } from '../bindings/github.com/neko233/WinDownloader233';
 
-  // Reactive state
   let category: Category = $state('programming');
   let query = $state('');
   let activeTags = $state<string[]>([]);
@@ -22,15 +21,10 @@
   let statusMessage = $state('');
   let progressMap = $state<Map<string, Progress>>(new Map());
 
-  // Load tools when category, query, or tags change
   let filteredTools = $derived.by(() => {
-    if (query.length > 0) {
-      return tools; // search results already filtered
-    }
+    if (query.length > 0) return tools;
     if (activeTags.length > 0) {
-      return tools.filter(t =>
-        activeTags.every(tag => t.tags.includes(tag))
-      );
+      return tools.filter(t => activeTags.every(tag => t.tags.includes(tag)));
     }
     return tools;
   });
@@ -39,41 +33,28 @@
     try {
       categoryNames = await AppService.GetCategoryNames();
       ui = await AppService.GetUIStrings();
-    } catch (e) {
-      console.error('Failed to load strings:', e);
-      // Fallback
+    } catch {
       categoryNames = {
         programming: '程序开发', art: '美术设计', planning: '策划文档',
         audio: '音频制作', qa: '测试 QA', pm: '项目管理', ai: 'AI 环境',
       };
-      ui = {
-        search: '搜索工具...', install: '安装', installed: '已安装',
-        settings: '设置', refresh: '刷新列表',
-      };
+      ui = { search: '搜索工具...', install: '安装', installed: '已安装', settings: '设置', refresh: '刷新列表' };
     }
   }
 
   async function loadTools() {
     loading = true;
     try {
-      if (query.length > 0) {
-        tools = await AppService.SearchTools(query);
-      } else {
-        tools = await AppService.GetToolsByCategory(category);
-      }
+      tools = query.length > 0
+        ? await AppService.SearchTools(query)
+        : await AppService.GetToolsByCategory(category);
       allTags = await AppService.GetAllTags();
-    } catch (e) {
-      console.error('Failed to load tools:', e);
-      tools = [];
-    } finally {
-      loading = false;
-    }
+    } catch { tools = []; }
+    finally { loading = false; }
   }
 
   async function selectCategory(cat: Category) {
-    category = cat;
-    query = '';
-    activeTags = [];
+    category = cat; query = ''; activeTags = [];
     await loadTools();
   }
 
@@ -81,37 +62,21 @@
     query = q;
     if (q.length > 0) {
       loading = true;
-      try {
-        tools = await AppService.SearchTools(q);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        loading = false;
-      }
-    } else {
-      await loadTools();
-    }
+      try { tools = await AppService.SearchTools(q); }
+      catch {} finally { loading = false; }
+    } else { await loadTools(); }
   }
 
   async function toggleTag(tag: string) {
     const idx = activeTags.indexOf(tag);
-    if (idx >= 0) {
-      activeTags = activeTags.filter(t => t !== tag);
-    } else {
-      activeTags = [...activeTags, tag];
-    }
+    activeTags = idx >= 0 ? activeTags.filter(t => t !== tag) : [...activeTags, tag];
   }
 
   async function installTool(tool: Tool) {
     try {
-      const msg = await AppService.InstallTool(tool.id);
-      statusMessage = msg;
-      // Poll for progress
+      statusMessage = await AppService.InstallTool(tool.id);
       pollProgress(tool.id);
-    } catch (e) {
-      console.error('Install failed:', e);
-      statusMessage = `Error: ${e}`;
-    }
+    } catch (e) { statusMessage = `Error: ${e}`; }
   }
 
   function pollProgress(toolId: string) {
@@ -123,36 +88,25 @@
         if (p.status === 'done' || p.status === 'error') {
           clearInterval(interval);
           statusMessage = p.message;
-          // Refresh tools to update installed status
           await loadTools();
         }
-      } catch (e) {
-        clearInterval(interval);
-      }
+      } catch { clearInterval(interval); }
     }, 500);
   }
 
   async function uninstallTool(tool: Tool) {
     try {
-      const msg = await AppService.UninstallTool(tool.id);
-      statusMessage = msg;
+      statusMessage = await AppService.UninstallTool(tool.id);
       pollProgress(tool.id);
-    } catch (e) {
-      console.error(e);
-    }
+    } catch {}
   }
 
   async function refreshRegistry() {
     loading = true;
     try {
-      const msg = await AppService.RefreshRegistry();
-      statusMessage = msg;
+      statusMessage = await AppService.RefreshRegistry();
       await loadTools();
-    } catch (e) {
-      console.error(e);
-    } finally {
-      loading = false;
-    }
+    } catch {} finally { loading = false; }
   }
 
   async function switchLanguage(newLang: string) {
@@ -162,34 +116,24 @@
     await loadTools();
   }
 
-  function getToolName(tool: Tool): string {
-    return lang === 'zh' ? tool.nameZh : tool.nameEn;
-  }
-
-  function getToolDesc(tool: Tool): string {
-    return lang === 'zh' ? tool.descZh : tool.descEn;
-  }
-
-  function getCategoryLabel(cat: string): string {
-    return categoryNames[cat] || cat;
-  }
+  function getToolName(tool: Tool) { return lang === 'zh' ? tool.nameZh : tool.nameEn; }
+  function getToolDesc(tool: Tool) { return lang === 'zh' ? tool.descZh : tool.descEn; }
 
   onMount(async () => {
-    // Init
-    try {
-      const initMsg = await AppService.InitRegistry();
-      statusMessage = initMsg;
-    } catch (e) {
-      console.error('Init failed:', e);
-    }
-
+    try { statusMessage = await AppService.InitRegistry(); } catch {}
     await loadStrings();
     await loadTools();
-
-    // Clear status after 5s
     setTimeout(() => { statusMessage = ''; }, 5000);
   });
 </script>
+
+<!-- Animated gradient mesh background -->
+<div class="bg-mesh">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+</div>
 
 <div class="app">
   <Sidebar
@@ -238,25 +182,65 @@
 </div>
 
 <style>
-  :global(*) {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
-  :global(html, body) {
-    height: 100%;
+  .bg-mesh {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
     overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
-    background: #0f1117;
-    color: #e1e4e8;
+    background: #000;
   }
 
-  :global(#app) {
-    height: 100%;
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.35;
+    animation: float 20s ease-in-out infinite;
+  }
+
+  .orb-1 {
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, #0A84FF 0%, transparent 70%);
+    top: -15%; left: -10%;
+    animation-delay: 0s;
+    animation-duration: 25s;
+  }
+
+  .orb-2 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, #BF5AF2 0%, transparent 70%);
+    top: 50%; right: -8%;
+    animation-delay: -5s;
+    animation-duration: 22s;
+  }
+
+  .orb-3 {
+    width: 450px; height: 450px;
+    background: radial-gradient(circle, #30D158 0%, transparent 70%);
+    bottom: -10%; left: 30%;
+    animation-delay: -10s;
+    animation-duration: 28s;
+  }
+
+  .orb-4 {
+    width: 350px; height: 350px;
+    background: radial-gradient(circle, #FF9F0A 0%, transparent 70%);
+    top: 20%; left: 50%;
+    animation-delay: -15s;
+    animation-duration: 30s;
+    opacity: 0.2;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    25% { transform: translate(40px, -30px) scale(1.05); }
+    50% { transform: translate(-20px, 20px) scale(0.95); }
+    75% { transform: translate(30px, 40px) scale(1.02); }
   }
 
   .app {
+    position: relative;
+    z-index: 1;
     display: flex;
     height: 100vh;
     overflow: hidden;

@@ -10,148 +10,144 @@
 
   let { lang, ui, onLanguageChange, onClose }: Props = $props();
 
-  // Mirror settings
   let useProxy = $state(false);
   let githubProxy = $state('https://ghfast.top/');
   let httpProxy = $state('');
+  let visible = $state(false);
 
-  // Load current config
   async function loadConfig() {
     try {
       const cfg = await AppService.GetMirrorConfig();
       useProxy = cfg.useProxy;
       githubProxy = cfg.githubProxy;
       httpProxy = cfg.httpProxy;
-    } catch (e) {
-      console.error(e);
-    }
+    } catch {}
   }
 
   async function saveMirrorConfig() {
     try {
-      await AppService.SetMirrorConfig({
-        githubProxy,
-        downloadCdn: githubProxy,
-        useProxy,
-        httpProxy,
-      });
-    } catch (e) {
-      console.error(e);
-    }
+      await AppService.SetMirrorConfig({ githubProxy, downloadCdn: githubProxy, useProxy, httpProxy });
+    } catch {}
   }
 
   function selectProxy(url: string) {
-    if (url) {
-      githubProxy = url;
-      saveMirrorConfig();
-    }
+    if (url) { githubProxy = url; saveMirrorConfig(); }
   }
 
-  const proxyOptions = [
-    { name: 'ghfast.top', url: 'https://ghfast.top/', desc: '高速稳定 (推荐)' },
-    { name: 'gh-proxy.com', url: 'https://gh-proxy.com/', desc: '免费公共代理' },
-    { name: 'mirror.ghproxy.com', url: 'https://mirror.ghproxy.com/', desc: 'GitHub 镜像' },
-  ];
+  let proxyOptions = $derived([
+    { name: 'ghfast.top', url: 'https://ghfast.top/', desc: lang === 'zh' ? '高速稳定' : 'Fast & stable' },
+    { name: 'gh-proxy.com', url: 'https://gh-proxy.com/', desc: lang === 'zh' ? '免费公共代理' : 'Free public proxy' },
+    { name: 'mirror.ghproxy.com', url: 'https://mirror.ghproxy.com/', desc: 'GitHub mirror' },
+  ]);
 
-  // Init
   loadConfig();
+  // Animate in
+  requestAnimationFrame(() => { visible = true; });
+
+  function handleClose() {
+    visible = false;
+    setTimeout(onClose, 250);
+  }
 </script>
 
-<div class="overlay" role="dialog" aria-modal="true" aria-label="Settings" onclick={onClose} onkeydown={() => {}}>
-  <div class="panel" role="document" onclick={(e) => e.stopPropagation()} onkeydown={() => {}}>
-    <div class="panel-header">
-      <h2>{ui['settings'] || '设置'}</h2>
-      <button class="close-btn" onclick={onClose}>✕</button>
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="overlay" class:visible onclick={handleClose} onkeydown={() => {}}>
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div class="sheet" class:visible onclick={(e) => e.stopPropagation()} onkeydown={() => {}}>
+    <!-- Sheet handle -->
+    <div class="sheet-handle">
+      <div class="handle-bar"></div>
     </div>
 
-    <div class="panel-body">
+    <div class="sheet-header">
+      <h2 class="sheet-title">{ui['settings'] || 'Settings'}</h2>
+      <button class="close-btn" onclick={handleClose} aria-label="Close">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="sheet-body">
       <!-- Language -->
-      <section class="setting-section">
-        <h3 class="setting-title">🌐 {ui['language'] || '语言'}</h3>
-        <div class="lang-options">
-          <button
-            class="lang-btn"
-            class:active={lang === 'zh'}
-            onclick={() => onLanguageChange('zh')}
-          >
+      <section class="section">
+        <div class="section-header">
+          <div class="section-icon lang-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          </div>
+          <h3 class="section-title">{ui['language'] || 'Language'}</h3>
+        </div>
+        <div class="seg-control">
+          <button class="seg-btn" class:active={lang === 'zh'} onclick={() => onLanguageChange('zh')}>
             中文
           </button>
-          <button
-            class="lang-btn"
-            class:active={lang === 'en'}
-            onclick={() => onLanguageChange('en')}
-          >
+          <button class="seg-btn" class:active={lang === 'en'} onclick={() => onLanguageChange('en')}>
             English
           </button>
         </div>
       </section>
 
-      <!-- Mirror Proxy -->
-      <section class="setting-section">
-        <h3 class="setting-title">🚀 {ui['mirror'] || '镜像加速'}</h3>
-        <p class="setting-desc">
-          {lang === 'zh'
-            ? '启用 GitHub 镜像代理，解决中国网络访问 GitHub 缓慢的问题'
-            : 'Enable GitHub mirror proxy for faster access in China'}
+      <!-- Divider -->
+      <div class="divider"></div>
+
+      <!-- Mirror -->
+      <section class="section">
+        <div class="section-header">
+          <div class="section-icon proxy-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <h3 class="section-title">{ui['mirror'] || 'Mirror Proxy'}</h3>
+        </div>
+        <p class="section-desc">
+          {lang === 'zh' ? 'GitHub 镜像代理加速下载' : 'GitHub mirror proxy for faster downloads'}
         </p>
 
-        <label class="toggle-row">
-          <span>{lang === 'zh' ? '启用镜像代理' : 'Enable Mirror Proxy'}</span>
-          <input type="checkbox" bind:checked={useProxy} onchange={saveMirrorConfig} />
-          <span class="toggle-slider"></span>
-        </label>
+        <div class="toggle-row" onclick={() => { useProxy = !useProxy; saveMirrorConfig(); }} onkeydown={() => {}} role="switch" aria-checked={useProxy} tabindex="0">
+          <span class="toggle-label">{lang === 'zh' ? '启用代理' : 'Enable Proxy'}</span>
+          <div class="toggle" class:on={useProxy}>
+            <div class="toggle-knob"></div>
+          </div>
+        </div>
 
         {#if useProxy}
-          <div class="proxy-options">
-            <p class="proxy-label">{lang === 'zh' ? '选择代理:' : 'Select proxy:'}</p>
+          <div class="proxy-section">
             {#each proxyOptions as opt}
-              <button
-                class="proxy-btn"
-                class:active={githubProxy === opt.url}
-                onclick={() => selectProxy(opt.url)}
-              >
-                <span class="proxy-name">{opt.name}</span>
-                <span class="proxy-desc">{opt.desc}</span>
+              <button class="proxy-option" class:active={githubProxy === opt.url} onclick={() => selectProxy(opt.url)}>
+                <div class="proxy-opt-left">
+                  <span class="proxy-opt-name">{opt.name}</span>
+                  <span class="proxy-opt-desc">{opt.desc}</span>
+                </div>
+                {#if githubProxy === opt.url}
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                {/if}
               </button>
             {/each}
 
-            <div class="custom-proxy">
-              <label class="proxy-label" for="custom-proxy-input">{lang === 'zh' ? '自定义代理:' : 'Custom proxy:'}</label>
-              <input
-                id="custom-proxy-input"
-                type="text"
-                class="proxy-input"
-                placeholder="https://your-proxy.com/"
-                bind:value={githubProxy}
-                onchange={saveMirrorConfig}
-              />
+            <div class="input-group">
+              <label class="input-label" for="custom-proxy">{lang === 'zh' ? '自定义代理' : 'Custom Proxy'}</label>
+              <input id="custom-proxy" type="text" class="glass-input" placeholder="https://your-proxy.com/" bind:value={githubProxy} onchange={saveMirrorConfig} />
             </div>
-          </div>
 
-          <div class="http-proxy-section">
-            <label class="proxy-label" for="http-proxy-input">HTTP {lang === 'zh' ? '代理:' : 'Proxy:'}</label>
-            <input
-              id="http-proxy-input"
-              type="text"
-              class="proxy-input"
-              placeholder="http://127.0.0.1:7890"
-              bind:value={httpProxy}
-              onchange={saveMirrorConfig}
-            />
-            <p class="setting-hint">
-              {lang === 'zh' ? '用于下载工具时走本地代理（如 Clash、V2Ray）' : 'Use local proxy (Clash, V2Ray, etc.) for downloads'}
-            </p>
+            <div class="input-group">
+              <label class="input-label" for="http-proxy">HTTP Proxy</label>
+              <input id="http-proxy" type="text" class="glass-input" placeholder="http://127.0.0.1:7890" bind:value={httpProxy} onchange={saveMirrorConfig} />
+              <span class="input-hint">{lang === 'zh' ? '本地代理（Clash / V2Ray）' : 'Local proxy (Clash / V2Ray)'}</span>
+            </div>
           </div>
         {/if}
       </section>
 
+      <!-- Divider -->
+      <div class="divider"></div>
+
       <!-- Registry Info -->
-      <section class="setting-section">
-        <h3 class="setting-title">📋 {lang === 'zh' ? '数据源' : 'Registry'}</h3>
-        <p class="setting-desc">
-          {lang === 'zh'
-            ? '工具列表由 GitHub 上的 JSON 文件驱动，无需更新应用即可获取最新工具列表。本地数据 + 远程数据对比时间戳，取最新的。'
-            : 'Tool list is driven by a GitHub JSON file. No app update needed. Local + remote data compared by timestamp, newest wins.'}
+      <section class="section">
+        <div class="section-header">
+          <div class="section-icon info-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          </div>
+          <h3 class="section-title">{lang === 'zh' ? '数据源' : 'Registry'}</h3>
+        </div>
+        <p class="section-desc">
+          {lang === 'zh' ? '工具列表由 GitHub JSON 驱动，本地 + 远程时间戳对比取最新，无需更新应用。' : 'Tool list driven by GitHub JSON. Local + remote compared by timestamp, newest wins.'}
         </p>
       </section>
     </div>
@@ -162,230 +158,316 @@
   .overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
-    backdrop-filter: blur(4px);
+    transition: background var(--duration-normal) var(--ease-smooth);
   }
 
-  .panel {
-    background: #161822;
-    border: 1px solid #2d3148;
-    border-radius: 16px;
-    width: 500px;
-    max-width: 90vw;
-    max-height: 80vh;
+  .overlay.visible {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .sheet {
+    width: 480px;
+    max-width: 92vw;
+    max-height: 82vh;
+    background: rgba(28, 28, 35, 0.88);
+    backdrop-filter: var(--blur-xl);
+    -webkit-backdrop-filter: var(--blur-xl);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-xl);
     display: flex;
     flex-direction: column;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.03);
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+    transition: all var(--duration-normal) var(--ease-spring);
   }
 
-  .panel-header {
+  .sheet.visible {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+
+  .sheet-handle {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0 4px;
+  }
+
+  .handle-bar {
+    width: 36px;
+    height: 4px;
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .sheet-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 24px;
-    border-bottom: 1px solid #2d3148;
+    padding: 4px 24px 16px;
   }
 
-  .panel-header h2 {
-    font-size: 18px;
-    font-weight: 600;
-    color: #e1e4e8;
+  .sheet-title {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
   }
 
   .close-btn {
-    background: none;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border: none;
-    color: #6e7681;
-    font-size: 18px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
     cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 4px;
+    transition: all var(--duration-fast);
   }
 
   .close-btn:hover {
-    background: #1c2030;
-    color: #c9d1d9;
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--text-primary);
   }
 
-  .panel-body {
-    padding: 20px 24px;
+  .sheet-body {
+    padding: 0 24px 24px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 20px;
   }
 
-  .setting-section {
+  .section {
     display: flex;
     flex-direction: column;
     gap: 10px;
   }
 
-  .setting-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: #c9d1d9;
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
-  .setting-desc {
+  .section-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .lang-icon {
+    background: rgba(10, 132, 255, 0.15);
+    color: var(--accent-blue);
+  }
+
+  .proxy-icon {
+    background: rgba(255, 159, 10, 0.15);
+    color: var(--accent-orange);
+  }
+
+  .info-icon {
+    background: rgba(191, 90, 242, 0.15);
+    color: var(--accent-purple);
+  }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+  }
+
+  .section-desc {
     font-size: 13px;
-    color: #8b949e;
+    color: var(--text-secondary);
     line-height: 1.5;
   }
 
-  .lang-options {
-    display: flex;
-    gap: 8px;
+  .divider {
+    height: 1px;
+    background: var(--glass-border);
+    margin: 0 -24px;
+    padding: 0;
   }
 
-  .lang-btn {
-    padding: 8px 20px;
-    border: 1px solid #2d3148;
+  /* Segmented control */
+  .seg-control {
+    display: flex;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-sm);
+    padding: 2px;
+    gap: 2px;
+  }
+
+  .seg-btn {
+    flex: 1;
+    padding: 8px 0;
+    border: none;
     border-radius: 8px;
     background: transparent;
-    color: #8b949e;
-    font-size: 14px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all var(--duration-fast) var(--ease-smooth);
     font-family: inherit;
   }
 
-  .lang-btn:hover {
-    border-color: #58a6ff;
-    color: #c9d1d9;
-  }
+  .seg-btn:hover { color: var(--text-primary); }
 
-  .lang-btn.active {
-    background: #1f3a5f;
-    border-color: #58a6ff;
-    color: #58a6ff;
+  .seg-btn.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
     font-weight: 600;
+    box-shadow: var(--shadow-sm);
   }
 
+  /* Toggle switch */
   .toggle-row {
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: space-between;
     cursor: pointer;
+  }
+
+  .toggle-label {
     font-size: 14px;
-    color: #c9d1d9;
-    user-select: none;
+    color: var(--text-primary);
+    font-weight: 500;
   }
 
-  .toggle-row input {
-    display: none;
-  }
-
-  .toggle-slider {
+  .toggle {
     position: relative;
-    width: 40px;
-    height: 22px;
-    background: #2d3148;
-    border-radius: 11px;
-    transition: background 0.2s;
-    margin-left: auto;
+    width: 44px;
+    height: 26px;
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.12);
+    cursor: pointer;
+    transition: background var(--duration-normal) var(--ease-smooth);
   }
 
-  .toggle-slider::after {
-    content: '';
+  .toggle.on {
+    background: var(--accent-green);
+  }
+
+  .toggle-knob {
     position: absolute;
     top: 3px;
     left: 3px;
-    width: 16px;
-    height: 16px;
-    background: #8b949e;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    transition: transform 0.2s, background 0.2s;
-  }
-
-  .toggle-row input:checked + .toggle-slider {
-    background: #238636;
-  }
-
-  .toggle-row input:checked + .toggle-slider::after {
-    transform: translateX(18px);
     background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    transition: transform var(--duration-normal) var(--ease-spring);
   }
 
-  .proxy-options, .http-proxy-section {
+  .toggle.on .toggle-knob {
+    transform: translateX(18px);
+  }
+
+  /* Proxy options */
+  .proxy-section {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding-left: 8px;
-    border-left: 2px solid #2d3148;
+    gap: 6px;
+    padding: 8px 0 0;
   }
 
-  .proxy-label {
-    font-size: 13px;
-    color: #8b949e;
-  }
-
-  .proxy-btn {
+  .proxy-option {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 12px;
-    border: 1px solid #2d3148;
-    border-radius: 8px;
-    background: transparent;
-    color: #c9d1d9;
+    padding: 10px 14px;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.03);
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all var(--duration-fast);
     text-align: left;
     font-family: inherit;
+    color: var(--text-primary);
+    width: 100%;
   }
 
-  .proxy-btn:hover {
-    border-color: #58a6ff;
+  .proxy-option:hover {
+    background: rgba(255, 255, 255, 0.06);
   }
 
-  .proxy-btn.active {
-    background: #1f3a5f;
-    border-color: #58a6ff;
+  .proxy-option.active {
+    background: rgba(10, 132, 255, 0.08);
+    border-color: rgba(10, 132, 255, 0.25);
+    color: var(--accent-blue);
   }
 
-  .proxy-name {
+  .proxy-opt-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .proxy-opt-name {
     font-size: 13px;
     font-weight: 500;
   }
 
-  .proxy-desc {
+  .proxy-opt-desc {
     font-size: 11px;
-    color: #8b949e;
+    color: var(--text-tertiary);
   }
 
-  .custom-proxy {
+  /* Inputs */
+  .input-group {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    margin-top: 4px;
   }
 
-  .proxy-input {
-    padding: 8px 12px;
-    background: #0f1117;
-    border: 1px solid #2d3148;
-    border-radius: 6px;
-    color: #c9d1d9;
+  .input-label {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+  }
+
+  .glass-input {
+    padding: 9px 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
     font-size: 13px;
-    font-family: 'Consolas', monospace;
+    font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
     outline: none;
+    transition: border-color var(--duration-fast);
   }
 
-  .proxy-input:focus {
-    border-color: #58a6ff;
+  .glass-input:focus {
+    border-color: rgba(10, 132, 255, 0.4);
   }
 
-  .proxy-input::placeholder {
-    color: #484f58;
+  .glass-input::placeholder {
+    color: var(--text-tertiary);
   }
 
-  .setting-hint {
+  .input-hint {
     font-size: 11px;
-    color: #6e7681;
+    color: var(--text-tertiary);
     line-height: 1.4;
   }
 </style>

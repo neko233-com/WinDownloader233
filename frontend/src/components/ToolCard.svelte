@@ -18,147 +18,201 @@
   let done = $derived(progress?.status === 'done');
   let error = $derived(progress?.status === 'error');
 
+  const iconMap: Record<string, { emoji: string; color: string }> = {
+    vscode:   { emoji: '⟨/⟩', color: '#007ACC' },
+    unity:    { emoji: '◆', color: '#FFFFFF' },
+    blender:  { emoji: '△', color: '#F5792A' },
+    python:   { emoji: 'λ', color: '#3776AB' },
+    git:      { emoji: '⑂', color: '#F05032' },
+    docker:   { emoji: '▣', color: '#2496ED' },
+    ollama:   { emoji: '◎', color: '#FFFFFF' },
+    nvidia:   { emoji: '◈', color: '#76B900' },
+    rider:    { emoji: '⟐', color: '#DD1111' },
+    godot:    { emoji: '◇', color: '#478CBF' },
+    intellij: { emoji: '⊡', color: '#FE2857' },
+    pycharm:  { emoji: '⊞', color: '#1ECE71' },
+  };
+
+  let iconInfo = $derived(iconMap[tool.icon] || { emoji: '□', color: '#8B949E' });
+
   function openHomepage() {
-    if (tool.homepage) {
-      window.open(tool.homepage, '_blank');
-    }
+    if (tool.homepage) window.open(tool.homepage, '_blank');
   }
 </script>
 
-<div class="tool-card" class:installing>
-  <div class="card-header">
-    <div class="tool-icon">
-      {#if tool.icon === 'vscode'}
-        <span style="color:#007acc">⚡</span>
-      {:else if tool.icon === 'unity'}
-        <span>🎮</span>
-      {:else if tool.icon === 'blender'}
-        <span style="color:#f5792a">🧊</span>
-      {:else if tool.icon === 'python'}
-        <span style="color:#3776ab">🐍</span>
-      {:else if tool.icon === 'git'}
-        <span style="color:#f05032">🔀</span>
-      {:else if tool.icon === 'docker'}
-        <span style="color:#2496ed">🐳</span>
-      {:else if tool.icon === 'ollama'}
-        <span>🦙</span>
-      {:else if tool.icon === 'nvidia'}
-        <span style="color:#76b900">🖥️</span>
-      {:else}
-        <span>📦</span>
-      {/if}
+<div class="card" class:installing class:error-state={error}>
+  <!-- Top glow for installing state -->
+  {#if installing}
+    <div class="card-glow"></div>
+  {/if}
+
+  <div class="card-top">
+    <div class="icon-wrap" style="--icon-color: {iconInfo.color}">
+      <span class="icon-char">{iconInfo.emoji}</span>
     </div>
-    <div class="card-info">
-      <div class="tool-name-row">
+    <div class="card-body">
+      <div class="name-row">
         <span class="tool-name">{name}</span>
-        {#if tool.isFree}
-          <span class="badge badge-free">{ui['free'] || '免费'}</span>
-        {:else}
-          <span class="badge badge-paid">{ui['paid'] || '付费'}</span>
-        {/if}
+        <span class="badge" class:free={tool.isFree} class:paid={!tool.isFree}>
+          {tool.isFree ? (ui['free'] || 'FREE') : (ui['paid'] || 'PRO')}
+        </span>
       </div>
       <p class="tool-desc">{description}</p>
     </div>
   </div>
 
-  <div class="card-meta">
-    <span class="meta-item">{ui['version'] || '版本'}: {tool.version}</span>
-    <span class="meta-sep">·</span>
-    <span class="meta-item">{ui['size'] || '大小'}: {tool.size}</span>
+  <div class="meta-row">
+    <span class="meta">{tool.version}</span>
+    <span class="meta-dot"></span>
+    <span class="meta">{tool.size}</span>
     {#if tool.homepage}
-      <span class="meta-sep">·</span>
-      <button class="meta-link" onclick={openHomepage}>{ui['homepage'] || '官网'} ↗</button>
+      <span class="meta-dot"></span>
+      <button class="meta-link" onclick={openHomepage}>
+        Homepage
+        <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
+      </button>
     {/if}
   </div>
 
   {#if tool.tags.length > 0}
-    <div class="card-tags">
+    <div class="tags-row">
       {#each tool.tags as tag}
-        <span class="mini-tag">{tag}</span>
+        <span class="tag">{tag}</span>
       {/each}
     </div>
   {/if}
 
   {#if installing && progress}
-    <div class="progress-section">
-      <div class="progress-bar">
-        <div
-          class="progress-fill"
-          style="width: {Math.max(0, progress.percent)}%"
-        ></div>
+    <div class="progress-wrap">
+      <div class="progress-track">
+        <div class="progress-bar" style="width: {Math.max(0, progress.percent)}%"></div>
       </div>
-      <span class="progress-text">{progress.message}</span>
+      <span class="progress-label">{progress.message}</span>
     </div>
   {/if}
 
   {#if error && progress}
-    <div class="error-msg">{progress.message}</div>
+    <div class="error-bar">{progress.message}</div>
   {/if}
 
-  <div class="card-actions">
+  <div class="card-bottom">
     {#if done && progress}
-      <span class="action-done">✓ {ui['installed'] || '已安装'}</span>
+      <div class="status-done">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        {ui['installed'] || 'Installed'}
+      </div>
     {:else if installing}
-      <button class="action-btn action-installing" disabled>
-        <span class="btn-spinner"></span>
-        {progress?.status === 'downloading' ? (ui['downloading'] || '下载中...') : (ui['installing'] || '安装中...')}
+      <button class="btn btn-progress" disabled>
+        <span class="btn-spin"></span>
+        {progress?.status === 'downloading' ? (ui['downloading'] || 'Downloading') : (ui['installing'] || 'Installing')}
       </button>
     {:else if tool.installed}
-      <button class="action-btn action-uninstall" onclick={onUninstall}>
-        {ui['uninstall'] || '卸载'}
+      <button class="btn btn-uninstall" onclick={onUninstall}>
+        {ui['uninstall'] || 'Uninstall'}
       </button>
     {:else}
-      <button class="action-btn action-install" onclick={onInstall}>
-        {tool.installType === 'winget' ? (ui['install'] || '安装') : (ui['download'] || '下载')}
+      <button class="btn btn-install" onclick={onInstall}>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        {tool.installType === 'winget' ? (ui['install'] || 'Install') : (ui['download'] || 'Download')}
       </button>
     {/if}
   </div>
 </div>
 
 <style>
-  .tool-card {
-    background: #161822;
-    border: 1px solid #2d3148;
-    border-radius: 12px;
-    padding: 16px;
+  .card {
+    position: relative;
+    background: var(--glass-2);
+    backdrop-filter: var(--blur-md);
+    -webkit-backdrop-filter: var(--blur-md);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 18px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-
-  .tool-card:hover {
-    border-color: #3d4458;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
-  }
-
-  .tool-card.installing {
-    border-color: #58a6ff33;
-  }
-
-  .card-header {
-    display: flex;
     gap: 12px;
+    transition: all var(--duration-normal) var(--ease-smooth);
+    overflow: hidden;
   }
 
-  .tool-icon {
-    width: 40px;
-    height: 40px;
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .card:hover {
+    border-color: var(--glass-border-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .card.installing {
+    border-color: rgba(10, 132, 255, 0.25);
+  }
+
+  .card.error-state {
+    border-color: rgba(255, 55, 95, 0.25);
+  }
+
+  .card-glow {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 80px;
+    background: radial-gradient(ellipse, rgba(10, 132, 255, 0.2) 0%, transparent 70%);
+    pointer-events: none;
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  .card-top {
+    display: flex;
+    gap: 14px;
+    position: relative;
+  }
+
+  .icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    background: #1c2030;
-    border-radius: 10px;
     flex-shrink: 0;
+    transition: all var(--duration-fast);
   }
 
-  .card-info {
+  .card:hover .icon-wrap {
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--icon-color) 20%, transparent);
+  }
+
+  .icon-char {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--icon-color);
+    letter-spacing: -0.04em;
+    font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+  }
+
+  .card-body {
     flex: 1;
     min-width: 0;
   }
 
-  .tool-name-row {
+  .name-row {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -167,176 +221,197 @@
   .tool-name {
     font-size: 15px;
     font-weight: 600;
-    color: #e1e4e8;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .badge {
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-weight: 600;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: var(--radius-full);
     flex-shrink: 0;
   }
 
-  .badge-free {
-    background: #0d3321;
-    color: #3fb950;
+  .badge.free {
+    background: rgba(48, 209, 88, 0.12);
+    color: var(--accent-green);
   }
 
-  .badge-paid {
-    background: #3d1f00;
-    color: #d29922;
+  .badge.paid {
+    background: rgba(255, 159, 10, 0.12);
+    color: var(--accent-orange);
   }
 
   .tool-desc {
-    font-size: 12px;
-    color: #8b949e;
+    font-size: 12.5px;
+    color: var(--text-secondary);
     margin-top: 4px;
-    line-height: 1.4;
+    line-height: 1.45;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
-  .card-meta {
+  .meta-row {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     font-size: 11px;
-    color: #6e7681;
+    color: var(--text-tertiary);
   }
 
-  .meta-sep {
-    color: #2d3148;
+  .meta-dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--text-tertiary);
+    opacity: 0.5;
   }
 
   .meta-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
     background: none;
     border: none;
-    color: #58a6ff;
+    color: var(--accent-blue);
     font-size: 11px;
     cursor: pointer;
     padding: 0;
     font-family: inherit;
+    opacity: 0.8;
+    transition: opacity var(--duration-fast);
   }
 
-  .meta-link:hover {
-    text-decoration: underline;
-  }
+  .meta-link:hover { opacity: 1; }
 
-  .card-tags {
+  .tags-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: 5px;
   }
 
-  .mini-tag {
+  .tag {
     font-size: 10px;
-    padding: 2px 6px;
-    background: #1c2030;
-    border-radius: 4px;
-    color: #8b949e;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-tertiary);
+    letter-spacing: 0.01em;
   }
 
-  .progress-section {
+  .progress-wrap {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-  }
-
-  .progress-bar {
-    height: 4px;
-    background: #2d3148;
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #58a6ff, #3fb950);
-    border-radius: 2px;
-    transition: width 0.3s ease;
-  }
-
-  .progress-text {
-    font-size: 11px;
-    color: #8b949e;
-  }
-
-  .error-msg {
-    font-size: 11px;
-    color: #f85149;
-    padding: 4px 8px;
-    background: #3d1214;
-    border-radius: 4px;
-  }
-
-  .card-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: auto;
-  }
-
-  .action-btn {
-    padding: 6px 16px;
-    border: none;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s;
-    font-family: inherit;
-    display: flex;
-    align-items: center;
     gap: 6px;
   }
 
-  .action-install {
-    background: #238636;
-    color: #fff;
+  .progress-track {
+    height: 3px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-full);
+    overflow: hidden;
   }
 
-  .action-install:hover {
-    background: #2ea043;
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-teal));
+    border-radius: var(--radius-full);
+    transition: width 0.4s var(--ease-smooth);
+    box-shadow: 0 0 8px rgba(10, 132, 255, 0.4);
   }
 
-  .action-installing {
-    background: #1f2940;
-    color: #58a6ff;
-    cursor: not-allowed;
+  .progress-label {
+    font-size: 11px;
+    color: var(--text-secondary);
   }
 
-  .action-uninstall {
-    background: #1c2030;
-    color: #8b949e;
-    border: 1px solid #2d3148;
+  .error-bar {
+    font-size: 11px;
+    color: var(--accent-pink);
+    padding: 6px 10px;
+    background: rgba(255, 55, 95, 0.08);
+    border: 1px solid rgba(255, 55, 95, 0.15);
+    border-radius: var(--radius-sm);
   }
 
-  .action-uninstall:hover {
-    background: #3d1214;
-    color: #f85149;
-    border-color: #f85149;
+  .card-bottom {
+    display: flex;
+    align-items: center;
+    margin-top: auto;
   }
 
-  .action-done {
-    color: #3fb950;
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 18px;
+    border: none;
+    border-radius: var(--radius-full);
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-smooth);
+    font-family: inherit;
+    letter-spacing: -0.01em;
   }
 
-  .btn-spinner {
+  .btn:active { transform: scale(0.96); }
+
+  .btn-install {
+    background: linear-gradient(135deg, var(--accent-blue), #0070E0);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(10, 132, 255, 0.3);
+  }
+
+  .btn-install:hover {
+    box-shadow: 0 4px 20px rgba(10, 132, 255, 0.45);
+    filter: brightness(1.1);
+  }
+
+  .btn-progress {
+    background: rgba(10, 132, 255, 0.12);
+    color: var(--accent-blue);
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .btn-uninstall {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-secondary);
+    border: 1px solid var(--glass-border);
+  }
+
+  .btn-uninstall:hover {
+    background: rgba(255, 55, 95, 0.1);
+    border-color: rgba(255, 55, 95, 0.25);
+    color: var(--accent-pink);
+  }
+
+  .status-done {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-green);
+  }
+
+  .btn-spin {
     width: 12px;
     height: 12px;
     border: 2px solid transparent;
-    border-top-color: #58a6ff;
+    border-top-color: var(--accent-blue);
     border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    display: inline-block;
+    animation: spin 0.7s linear infinite;
   }
 
   @keyframes spin {
