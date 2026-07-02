@@ -39,13 +39,13 @@ jobs:
         run: npx vite build --mode production
 
       - name: Build Go binary
-        run: go build -ldflags="-s -w" -o UniGetUI233.exe .
+        run: go build -ldflags="-s -w" -o WinDownloader233.exe .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: UniGetUI233-windows
-          path: UniGetUI233.exe
+          name: WinDownloader233-windows
+          path: WinDownloader233.exe
 
   release:
     needs: build-windows
@@ -54,12 +54,12 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: UniGetUI233-windows
+          name: WinDownloader233-windows
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: UniGetUI233.exe
+          files: WinDownloader233.exe
           generate_release_notes: true
           draft: false
           prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}

@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/neko233/unigetui233/mirror"
+	"github.com/neko233/WinDownloader233/mirror"
 )
 
 // Downloader handles direct file downloads with progress tracking.
@@ -40,7 +40,7 @@ func (d *Downloader) Download(toolID, url, filename string) (string, error) {
 		d.manager.UpdateProgress(toolID, "error", 0, err.Error())
 		return "", fmt.Errorf("create request: %w", err)
 	}
-	req.Header.Set("User-Agent", "UniGetUI233/1.0")
+	req.Header.Set("User-Agent", "WinDownloader233/1.0")
 
 	resp, err := d.httpClient.Do(req)
 	if err != nil {

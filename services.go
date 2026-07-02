@@ -5,10 +5,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/neko233/unigetui233/i18n"
-	"github.com/neko233/unigetui233/installer"
-	"github.com/neko233/unigetui233/mirror"
-	"github.com/neko233/unigetui233/registry"
+	"github.com/neko233/WinDownloader233/i18n"
+	"github.com/neko233/WinDownloader233/installer"
+	"github.com/neko233/WinDownloader233/mirror"
+	"github.com/neko233/WinDownloader233/registry"
 )
 
 // AppService is the main Wails service exposing backend functionality
@@ -22,11 +22,11 @@ type AppService struct {
 
 // NewAppService initializes all backend managers.
 func NewAppService() *AppService {
-	downloadDir := filepath.Join(os.TempDir(), "UniGetUI233_downloads")
+	downloadDir := filepath.Join(os.TempDir(), "WinDownloader233_downloads")
 
 	mirrorMgr := mirror.NewManager(mirror.DefaultConfig())
 	registryMgr := registry.NewManager(
-		"https://raw.githubusercontent.com/neko233/UniGetUI233-registry/main/tools.json",
+		"https://raw.githubusercontent.com/neko233/WinDownloader233-registry/main/tools.json",
 	)
 	installerMgr := installer.NewManager()
 	downloader := installer.NewDownloader(installerMgr, mirrorMgr, downloadDir)

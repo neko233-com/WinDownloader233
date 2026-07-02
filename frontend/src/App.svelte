@@ -6,7 +6,7 @@
   import Header from './components/Header.svelte';
   import ToolList from './components/ToolList.svelte';
   import SettingsPanel from './components/SettingsPanel.svelte';
-  import { AppService } from '../bindings/github.com/neko233/unigetui233';
+  import { AppService } from '../bindings/github.com/neko233/WinDownloader233';
 
   // Reactive state
   let category: Category = $state('programming');

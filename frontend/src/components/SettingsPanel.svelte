@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { AppService } from '../../bindings/github.com/neko233/unigetui233';
+  import { AppService } from '../../bindings/github.com/neko233/WinDownloader233';
 
   interface Props {
     lang: string;

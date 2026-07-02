@@ -1,4 +1,4 @@
-module github.com/neko233/unigetui233
+module github.com/neko233/WinDownloader233
 
 go 1.25.0
 

@@ -14,7 +14,7 @@ func main() {
 	appService := NewAppService()
 
 	app := application.New(application.Options{
-		Name:        "UniGetUI233",
+		Name:        "WinDownloader233",
 		Description: "Game Dev Toolkit Manager — install dev tools with one click",
 		Services: []application.Service{
 			application.NewService(appService),
@@ -28,7 +28,7 @@ func main() {
 	})
 
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title:  "UniGetUI233",
+		Title:  "WinDownloader233",
 		Width:  1200,
 		Height: 780,
 		MinWidth:  900,
