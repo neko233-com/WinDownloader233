@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"net/url"
 	"path/filepath"
 
+	"github.com/neko233/WinDownloader233/drivers"
 	"github.com/neko233/WinDownloader233/i18n"
 	"github.com/neko233/WinDownloader233/installer"
 	"github.com/neko233/WinDownloader233/mirror"
@@ -18,11 +19,12 @@ type AppService struct {
 	installerMgr *installer.Manager
 	mirrorMgr    *mirror.Manager
 	downloader   *installer.Downloader
+	driverMgr    *drivers.Manager
 }
 
 // NewAppService initializes all backend managers.
 func NewAppService() *AppService {
-	downloadDir := filepath.Join(os.TempDir(), "WinDownloader233_downloads")
+	downloadDir := installer.DefaultCacheDir("downloads")
 
 	mirrorMgr := mirror.NewManager(mirror.DefaultConfig())
 	registryMgr := registry.NewManager(
@@ -30,12 +32,14 @@ func NewAppService() *AppService {
 	)
 	installerMgr := installer.NewManager()
 	downloader := installer.NewDownloader(installerMgr, mirrorMgr, downloadDir)
+	driverMgr := drivers.NewManager()
 
 	return &AppService{
 		registryMgr:  registryMgr,
 		installerMgr: installerMgr,
 		mirrorMgr:    mirrorMgr,
 		downloader:   downloader,
+		driverMgr:    driverMgr,
 	}
 }
 
@@ -46,6 +50,9 @@ func (s *AppService) InitRegistry() (string, error) {
 	if err := s.registryMgr.LoadEmbedded(); err != nil {
 		return "", fmt.Errorf("load embedded: %w", err)
 	}
+	go func() {
+		_ = installer.RefreshInstalledPackages("winget")
+	}()
 
 	updated, err := s.registryMgr.SyncRemote()
 	if err != nil {
@@ -59,23 +66,23 @@ func (s *AppService) InitRegistry() (string, error) {
 
 // ToolDTO is the data transfer object for tools sent to the frontend.
 type ToolDTO struct {
-	ID          string `json:"id"`
-	NameZH      string `json:"nameZh"`
-	NameEN      string `json:"nameEn"`
-	DescZH      string `json:"descZh"`
-	DescEN      string `json:"descEn"`
-	Category    string `json:"category"`
+	ID          string   `json:"id"`
+	NameZH      string   `json:"nameZh"`
+	NameEN      string   `json:"nameEn"`
+	DescZH      string   `json:"descZh"`
+	DescEN      string   `json:"descEn"`
+	Category    string   `json:"category"`
 	Tags        []string `json:"tags"`
-	Icon        string `json:"icon"`
-	Version     string `json:"version"`
-	Size        string `json:"size"`
-	WingetID    string `json:"wingetId"`
-	DownloadURL string `json:"downloadUrl"`
-	MirrorURL   string `json:"mirrorUrl"`
-	Homepage    string `json:"homepage"`
-	IsFree      bool   `json:"isFree"`
-	InstallType string `json:"installType"`
-	Installed   bool   `json:"installed"`
+	Icon        string   `json:"icon"`
+	Version     string   `json:"version"`
+	Size        string   `json:"size"`
+	WingetID    string   `json:"wingetId"`
+	DownloadURL string   `json:"downloadUrl"`
+	MirrorURL   string   `json:"mirrorUrl"`
+	Homepage    string   `json:"homepage"`
+	IsFree      bool     `json:"isFree"`
+	InstallType string   `json:"installType"`
+	Installed   bool     `json:"installed"`
 }
 
 func toolToDTO(t registry.Tool) ToolDTO {
@@ -96,7 +103,7 @@ func toolToDTO(t registry.Tool) ToolDTO {
 		Homepage:    t.Homepage,
 		IsFree:      t.IsFree,
 		InstallType: t.InstallType,
-		Installed:   installer.IsWingetInstalled(t.WingetID),
+		Installed:   installer.CachedInstalledPackageID("winget", t.WingetID),
 	}
 }
 
@@ -178,7 +185,7 @@ func (s *AppService) InstallTool(toolID string) (string, error) {
 			return "", fmt.Errorf("no download URL for %s", toolID)
 		}
 		go func() {
-			filename := filepath.Base(tool.DownloadURL)
+			filename := downloadFilename(tool.DownloadURL, toolID)
 			_, _ = s.downloader.Download(toolID, tool.DownloadURL, filename)
 		}()
 		return i18n.T("开始下载", "Starting download"), nil
@@ -214,13 +221,118 @@ func (s *AppService) GetAllInstallProgress() []installer.Progress {
 	return s.installerMgr.GetAllProgress()
 }
 
+// GetInstallLogs returns recent debug logs for a task.
+func (s *AppService) GetInstallLogs(toolID string) []installer.LogEntry {
+	return s.installerMgr.GetLogs(toolID)
+}
+
+// ExportInstallLog returns a shareable plain-text log for a task.
+func (s *AppService) ExportInstallLog(toolID string) string {
+	return s.installerMgr.ExportLog(toolID)
+}
+
+// GetLogDirectory returns the persistent debug log directory.
+func (s *AppService) GetLogDirectory() string {
+	return s.installerMgr.LogDirectory()
+}
+
+// GetCacheDirectory returns the persistent cache directory.
+func (s *AppService) GetCacheDirectory() string {
+	return installer.DefaultCacheDir()
+}
+
+// --- Package managers (UniGetUI-style) ---
+
+func (s *AppService) GetPackageManagers() []installer.PackageManagerInfo {
+	return installer.ListPackageManagers()
+}
+
+func (s *AppService) SearchPackages(manager string, query string, limit int) []installer.PackageInfo {
+	return installer.SearchPackages(manager, query, limit)
+}
+
+func (s *AppService) GetInstalledPackages(manager string) []installer.PackageInfo {
+	return installer.ListInstalledPackages(manager)
+}
+
+func (s *AppService) RefreshInstalledPackages(manager string) []installer.PackageInfo {
+	return installer.RefreshInstalledPackages(manager)
+}
+
+func (s *AppService) GetPackageUpdates(manager string) []installer.PackageInfo {
+	return installer.ListPackageUpdates(manager)
+}
+
+func (s *AppService) RefreshPackageUpdates(manager string) []installer.PackageInfo {
+	return installer.RefreshPackageUpdates(manager)
+}
+
+func (s *AppService) RunPackageAction(action string, manager string, id string, options string) (string, error) {
+	if action != "install" && action != "update" && action != "uninstall" {
+		return "", fmt.Errorf("unsupported action: %s", action)
+	}
+	go func() {
+		_ = s.installerMgr.RunPackageAction(action, manager, id, options)
+	}()
+	return i18n.T("任务已开始", "Task started"), nil
+}
+
+func downloadFilename(rawURL, fallback string) string {
+	if u, err := url.Parse(rawURL); err == nil {
+		name := filepath.Base(u.Path)
+		if name != "." && name != "/" && name != "" {
+			return name
+		}
+	}
+	return fallback + ".download"
+}
+
+func (s *AppService) RunBulkPackageAction(action string, items []installer.PackageAction) (string, error) {
+	if action != "install" && action != "update" && action != "uninstall" {
+		return "", fmt.Errorf("unsupported action: %s", action)
+	}
+	go func() {
+		for _, item := range items {
+			_ = s.installerMgr.RunPackageAction(action, item.Manager, item.ID, item.Options)
+		}
+	}()
+	return i18n.T("批量任务已开始", "Bulk task started"), nil
+}
+
+func (s *AppService) ExportInstalledPackages(manager string) (string, error) {
+	pkgs := installer.ListInstalledPackages(manager)
+	return installer.ExportBundle(pkgs)
+}
+
+func (s *AppService) ImportPackageBundle(raw string) ([]installer.PackageAction, error) {
+	return installer.ImportBundle(raw)
+}
+
+// --- Driver downloads ---
+
+func (s *AppService) GetAllDrivers() []drivers.Driver {
+	return s.driverMgr.GetAll()
+}
+
+func (s *AppService) SearchDrivers(query string, category string) []drivers.Driver {
+	return s.driverMgr.Search(query, category)
+}
+
+func (s *AppService) GetDriverCategories() []string {
+	return s.driverMgr.Categories()
+}
+
+func (s *AppService) GetDriverRegistryTimestamp() string {
+	return s.driverMgr.Timestamp()
+}
+
 // IsToolInstalled checks if a tool is installed via winget.
 func (s *AppService) IsToolInstalled(toolID string) bool {
 	tool := s.registryMgr.GetByID(toolID)
 	if tool == nil {
 		return false
 	}
-	return installer.IsWingetInstalled(tool.WingetID)
+	return installer.CachedInstalledPackageID("winget", tool.WingetID)
 }
 
 // --- Settings ---

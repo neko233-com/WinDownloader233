@@ -31,21 +31,14 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Generate Wails bindings
-        run: wails3 generate bindings
-
-      - name: Build frontend
-        working-directory: frontend
-        run: npx vite build --mode production
-
-      - name: Build Go binary
-        run: go build -ldflags="-s -w" -o WinDownloader233.exe .
+      - name: Build Wails app
+        run: wails3 build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: WinDownloader233-windows
-          path: WinDownloader233.exe
+          path: bin/WinDownloader233.exe
 
   release:
     needs: build-windows

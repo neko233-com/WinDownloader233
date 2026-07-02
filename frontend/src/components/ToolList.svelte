@@ -23,7 +23,7 @@
       <div class="loading-ring">
         <div class="ring-segment"></div>
       </div>
-      <p class="empty-label">Loading</p>
+      <p class="empty-label">{ui['loading'] || 'Loading'}</p>
     </div>
   {:else if tools.length === 0}
     <div class="empty-state">

@@ -13,9 +13,9 @@ import (
 
 // Downloader handles direct file downloads with progress tracking.
 type Downloader struct {
-	manager    *Manager
-	mirror     *mirror.Manager
-	httpClient *http.Client
+	manager     *Manager
+	mirror      *mirror.Manager
+	httpClient  *http.Client
 	downloadDir string
 }
 
@@ -33,10 +33,26 @@ func NewDownloader(mgr *Manager, mirrorMgr *mirror.Manager, downloadDir string) 
 // Returns the local file path on success.
 func (d *Downloader) Download(toolID, url, filename string) (string, error) {
 	resolvedURL := d.mirror.ResolveDownloadURL(url)
-	d.manager.UpdateProgress(toolID, "downloading", 0, fmt.Sprintf("Starting download..."))
+	d.manager.UpdateProgress(toolID, "downloading", 0, "Starting download...")
+	d.manager.AppendLog(toolID, "info", "download url: "+resolvedURL)
+
+	if err := os.MkdirAll(d.downloadDir, 0755); err != nil {
+		d.manager.AppendLog(toolID, "error", err.Error())
+		d.manager.UpdateProgress(toolID, "error", 0, err.Error())
+		return "", fmt.Errorf("create download dir: %w", err)
+	}
+
+	destPath := filepath.Join(d.downloadDir, filename)
+	if info, err := os.Stat(destPath); err == nil && info.Size() > 0 {
+		msg := fmt.Sprintf("Using cached file: %s", destPath)
+		d.manager.AppendLog(toolID, "info", msg)
+		d.manager.UpdateProgress(toolID, "done", 100, msg)
+		return destPath, nil
+	}
 
 	req, err := http.NewRequest("GET", resolvedURL, nil)
 	if err != nil {
+		d.manager.AppendLog(toolID, "error", err.Error())
 		d.manager.UpdateProgress(toolID, "error", 0, err.Error())
 		return "", fmt.Errorf("create request: %w", err)
 	}
@@ -44,24 +60,21 @@ func (d *Downloader) Download(toolID, url, filename string) (string, error) {
 
 	resp, err := d.httpClient.Do(req)
 	if err != nil {
+		d.manager.AppendLog(toolID, "error", err.Error())
 		d.manager.UpdateProgress(toolID, "error", 0, err.Error())
 		return "", fmt.Errorf("download: %w", err)
 	}
 	defer resp.Body.Close()
+	d.manager.AppendLog(toolID, "info", fmt.Sprintf("http status: %s", resp.Status))
 
 	if resp.StatusCode != http.StatusOK {
 		d.manager.UpdateProgress(toolID, "error", 0, fmt.Sprintf("HTTP %d", resp.StatusCode))
+		d.manager.AppendLog(toolID, "error", fmt.Sprintf("download returned status %d", resp.StatusCode))
 		return "", fmt.Errorf("download returned status %d", resp.StatusCode)
 	}
-
-	// Ensure download directory exists
-	if err := os.MkdirAll(d.downloadDir, 0755); err != nil {
-		return "", fmt.Errorf("create download dir: %w", err)
-	}
-
-	destPath := filepath.Join(d.downloadDir, filename)
 	file, err := os.Create(destPath)
 	if err != nil {
+		d.manager.AppendLog(toolID, "error", err.Error())
 		d.manager.UpdateProgress(toolID, "error", 0, err.Error())
 		return "", fmt.Errorf("create file: %w", err)
 	}
@@ -76,6 +89,7 @@ func (d *Downloader) Download(toolID, url, filename string) (string, error) {
 		if n > 0 {
 			_, writeErr := file.Write(buf[:n])
 			if writeErr != nil {
+				d.manager.AppendLog(toolID, "error", writeErr.Error())
 				d.manager.UpdateProgress(toolID, "error", 0, writeErr.Error())
 				return "", fmt.Errorf("write: %w", writeErr)
 			}
@@ -92,6 +106,7 @@ func (d *Downloader) Download(toolID, url, filename string) (string, error) {
 		}
 		if readErr != nil {
 			if readErr != io.EOF {
+				d.manager.AppendLog(toolID, "error", readErr.Error())
 				d.manager.UpdateProgress(toolID, "error", 0, readErr.Error())
 				return "", fmt.Errorf("read: %w", readErr)
 			}
@@ -100,5 +115,6 @@ func (d *Downloader) Download(toolID, url, filename string) (string, error) {
 	}
 
 	d.manager.UpdateProgress(toolID, "done", 100, fmt.Sprintf("Downloaded to %s", destPath))
+	d.manager.AppendLog(toolID, "info", fmt.Sprintf("Downloaded to %s", destPath))
 	return destPath, nil
 }

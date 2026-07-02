@@ -1,19 +1,19 @@
-/* WinDownloader233 — iOS 27 Liquid Glass Design System */
+/* WinDownloader233 — readable package-manager UI */
 
 :root {
   /* Surface layers */
-  --bg-base: #000000;
-  --glass-1: rgba(28, 28, 35, 0.72);
-  --glass-2: rgba(38, 38, 48, 0.55);
-  --glass-3: rgba(48, 48, 60, 0.40);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-border-hover: rgba(255, 255, 255, 0.15);
-  --glass-highlight: rgba(255, 255, 255, 0.04);
+  --bg-base: #f6f8fb;
+  --glass-1: #ffffff;
+  --glass-2: #ffffff;
+  --glass-3: #f1f5f9;
+  --glass-border: #d8e0ea;
+  --glass-border-hover: #aebdce;
+  --glass-highlight: #edf5ff;
 
   /* Text hierarchy */
-  --text-primary: rgba(255, 255, 255, 0.92);
-  --text-secondary: rgba(255, 255, 255, 0.55);
-  --text-tertiary: rgba(255, 255, 255, 0.32);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
 
   /* Accent colors */
   --accent-blue: #0A84FF;
@@ -25,9 +25,9 @@
 
   /* Radii */
   --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 22px;
-  --radius-xl: 28px;
+  --radius-md: 12px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
   --radius-full: 999px;
 
   /* Blur */
@@ -37,9 +37,9 @@
   --blur-xl: blur(80px);
 
   /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.12);
+  --shadow-lg: 0 18px 50px rgba(15, 23, 42, 0.16);
   --shadow-glow-blue: 0 0 20px rgba(10, 132, 255, 0.25);
   --shadow-glow-green: 0 0 20px rgba(48, 209, 88, 0.25);
 
@@ -69,7 +69,7 @@ html, body {
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
@@ -96,11 +96,11 @@ input {
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(100, 116, 139, 0.32);
   border-radius: var(--radius-full);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(100, 116, 139, 0.52);
 }
 
 ::selection {

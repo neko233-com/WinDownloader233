@@ -1,0 +1,215 @@
+{
+  "version": 1,
+  "timestamp": "2026-07-02-16-45-00",
+  "drivers": [
+    {
+      "id": "nvidia-geforce",
+      "vendor": "NVIDIA",
+      "name": "GeForce / Studio Driver",
+      "category": "gpu",
+      "deviceTypes": ["显卡", "GPU"],
+      "aliases": ["nvidia", "geforce", "rtx", "gtx", "studio", "game ready", "英伟达", "显卡驱动"],
+      "downloadUrl": "https://www.nvidia.com/Download/index.aspx",
+      "supportUrl": "https://www.nvidia.com/en-us/geforce/drivers/",
+      "notes": "GeForce、RTX、GTX、Studio、Game Ready 驱动。"
+    },
+    {
+      "id": "amd-radeon",
+      "vendor": "AMD",
+      "name": "Radeon / Adrenalin Driver",
+      "category": "gpu",
+      "deviceTypes": ["显卡", "GPU"],
+      "aliases": ["amd", "radeon", "adrenalin", "rx", "apu", "核显", "显卡驱动"],
+      "downloadUrl": "https://www.amd.com/en/support/download/drivers.html",
+      "supportUrl": "https://www.amd.com/en/support",
+      "notes": "Radeon RX、核显、Adrenalin 套件。"
+    },
+    {
+      "id": "intel-graphics",
+      "vendor": "Intel",
+      "name": "Intel Arc / UHD / Iris Xe Driver",
+      "category": "gpu",
+      "deviceTypes": ["显卡", "核显"],
+      "aliases": ["intel graphics", "arc", "uhd", "iris", "xe", "intel 核显", "英特尔显卡"],
+      "downloadUrl": "https://www.intel.com/content/www/us/en/download-center/home.html",
+      "supportUrl": "https://www.intel.com/content/www/us/en/support/products/80939/graphics.html",
+      "notes": "Intel Arc、UHD、Iris Xe 显卡驱动。"
+    },
+    {
+      "id": "amd-chipset",
+      "vendor": "AMD",
+      "name": "AMD Chipset Driver",
+      "category": "chipset",
+      "deviceTypes": ["主板", "芯片组"],
+      "aliases": ["amd chipset", "ryzen", "am4", "am5", "x670", "b650", "x570", "b550", "芯片组", "主板驱动"],
+      "downloadUrl": "https://www.amd.com/en/support/download/drivers.html",
+      "supportUrl": "https://www.amd.com/en/support",
+      "notes": "Ryzen 平台芯片组驱动。"
+    },
+    {
+      "id": "intel-chipset",
+      "vendor": "Intel",
+      "name": "Intel Chipset / ME / Storage Drivers",
+      "category": "chipset",
+      "deviceTypes": ["主板", "芯片组", "存储"],
+      "aliases": ["intel chipset", "intel me", "rst", "rapid storage", "z790", "z690", "b760", "b660", "芯片组", "主板驱动"],
+      "downloadUrl": "https://www.intel.com/content/www/us/en/download-center/home.html",
+      "supportUrl": "https://www.intel.com/content/www/us/en/support.html",
+      "notes": "Intel 芯片组、ME、RST 通常也在主板厂商页面提供。"
+    },
+    {
+      "id": "asus-support",
+      "vendor": "ASUS",
+      "name": "ASUS Motherboard / Armoury Crate",
+      "category": "motherboard",
+      "deviceTypes": ["主板", "外设", "笔记本"],
+      "aliases": ["asus", "rog", "tuf", "prime", "proart", "华硕", "玩家国度", "奥创", "armoury crate", "主板驱动"],
+      "downloadUrl": "https://www.asus.com/support/download-center/",
+      "supportUrl": "https://www.asus.com/support/",
+      "notes": "主板 BIOS、芯片组、音频、网卡、Armoury Crate。"
+    },
+    {
+      "id": "msi-support",
+      "vendor": "MSI",
+      "name": "MSI Motherboard / Center",
+      "category": "motherboard",
+      "deviceTypes": ["主板", "显卡", "笔记本"],
+      "aliases": ["msi", "微星", "meg", "mpg", "mag", "msi center", "dragon center", "主板驱动"],
+      "downloadUrl": "https://www.msi.com/support/download",
+      "supportUrl": "https://www.msi.com/support",
+      "notes": "主板、显卡、笔记本驱动与 MSI Center。"
+    },
+    {
+      "id": "gigabyte-support",
+      "vendor": "GIGABYTE",
+      "name": "GIGABYTE / AORUS Support",
+      "category": "motherboard",
+      "deviceTypes": ["主板", "显卡", "笔记本"],
+      "aliases": ["gigabyte", "aorus", "技嘉", "雕牌", "gcc", "主板驱动"],
+      "downloadUrl": "https://www.gigabyte.com/Support",
+      "supportUrl": "https://www.gigabyte.com/Support",
+      "notes": "主板 BIOS、驱动、GIGABYTE Control Center。"
+    },
+    {
+      "id": "asrock-support",
+      "vendor": "ASRock",
+      "name": "ASRock Motherboard Support",
+      "category": "motherboard",
+      "deviceTypes": ["主板"],
+      "aliases": ["asrock", "华擎", "phantom gaming", "steel legend", "taichi", "主板驱动"],
+      "downloadUrl": "https://www.asrock.com/support/index.asp",
+      "supportUrl": "https://www.asrock.com/support/index.asp",
+      "notes": "ASRock 主板 BIOS 与驱动。"
+    },
+    {
+      "id": "realtek-audio",
+      "vendor": "Realtek",
+      "name": "Realtek Audio / LAN Drivers",
+      "category": "audio",
+      "deviceTypes": ["音频", "网卡"],
+      "aliases": ["realtek", "瑞昱", "alc", "audio", "声卡", "音频驱动", "lan", "网卡"],
+      "downloadUrl": "https://www.realtek.com/Download/List?cate_id=584",
+      "supportUrl": "https://www.realtek.com/Download/List",
+      "notes": "多数主板音频/网卡驱动建议优先用主板厂商页面。"
+    },
+    {
+      "id": "logitech-ghub",
+      "vendor": "Logitech",
+      "name": "Logitech G HUB / Options+",
+      "category": "peripheral",
+      "deviceTypes": ["鼠标", "键盘", "摄像头"],
+      "aliases": ["logitech", "罗技", "g hub", "ghub", "options", "mx", "g502", "g pro", "鼠标驱动", "键盘驱动"],
+      "downloadUrl": "https://support.logi.com/hc/articles/360025298133",
+      "supportUrl": "https://support.logi.com/",
+      "notes": "Logitech G 外设用 G HUB；办公外设多用 Options+。"
+    },
+    {
+      "id": "razer-synapse",
+      "vendor": "Razer",
+      "name": "Razer Synapse",
+      "category": "peripheral",
+      "deviceTypes": ["鼠标", "键盘", "耳机"],
+      "aliases": ["razer", "雷蛇", "synapse", "炼狱蝰蛇", "黑寡妇", "鼠标驱动", "键盘驱动"],
+      "downloadUrl": "https://www.razer.com/synapse-3",
+      "supportUrl": "https://support.razer.com/",
+      "notes": "Razer 鼠标、键盘、耳机配置软件。"
+    },
+    {
+      "id": "corsair-icue",
+      "vendor": "Corsair",
+      "name": "Corsair iCUE",
+      "category": "peripheral",
+      "deviceTypes": ["鼠标", "键盘", "内存", "散热"],
+      "aliases": ["corsair", "海盗船", "icue", "k70", "k100", "鼠标驱动", "键盘驱动", "rgb"],
+      "downloadUrl": "https://www.corsair.com/us/en/s/downloads",
+      "supportUrl": "https://help.corsair.com/",
+      "notes": "Corsair 外设、RGB、散热、内存控制。"
+    },
+    {
+      "id": "steelseries-gg",
+      "vendor": "SteelSeries",
+      "name": "SteelSeries GG",
+      "category": "peripheral",
+      "deviceTypes": ["鼠标", "键盘", "耳机"],
+      "aliases": ["steelseries", "赛睿", "gg", "engine", "apex", "rival", "arctis", "鼠标驱动", "键盘驱动"],
+      "downloadUrl": "https://steelseries.com/gg",
+      "supportUrl": "https://support.steelseries.com/",
+      "notes": "SteelSeries 外设配置与耳机功能。"
+    },
+    {
+      "id": "hyperx-ngenuity",
+      "vendor": "HyperX",
+      "name": "HyperX NGENUITY",
+      "category": "peripheral",
+      "deviceTypes": ["鼠标", "键盘", "耳机"],
+      "aliases": ["hyperx", "ngenuity", "金士顿", "极度未知", "鼠标驱动", "键盘驱动"],
+      "downloadUrl": "https://hyperx.com/pages/ngenuity",
+      "supportUrl": "https://hyperx.com/pages/support",
+      "notes": "HyperX 外设配置软件。"
+    },
+    {
+      "id": "focusrite-control",
+      "vendor": "Focusrite",
+      "name": "Focusrite Control / Scarlett Drivers",
+      "category": "audio",
+      "deviceTypes": ["声卡", "音频接口"],
+      "aliases": ["focusrite", "scarlett", "福克斯特", "声卡", "音频接口", "asio"],
+      "downloadUrl": "https://downloads.focusrite.com/",
+      "supportUrl": "https://support.focusrite.com/",
+      "notes": "Scarlett、Clarett、音频接口驱动与控制软件。"
+    },
+    {
+      "id": "wacom-drivers",
+      "vendor": "Wacom",
+      "name": "Wacom Tablet Driver",
+      "category": "peripheral",
+      "deviceTypes": ["数位板", "手写板"],
+      "aliases": ["wacom", "和冠", "数位板", "手绘板", "tablet", "ctl", "intuos"],
+      "downloadUrl": "https://www.wacom.com/support/product-support/drivers",
+      "supportUrl": "https://support.wacom.com/",
+      "notes": "Wacom 数位板与显示屏驱动。"
+    },
+    {
+      "id": "huion-drivers",
+      "vendor": "Huion",
+      "name": "Huion Tablet Driver",
+      "category": "peripheral",
+      "deviceTypes": ["数位板", "手写板"],
+      "aliases": ["huion", "绘王", "数位板", "手绘板", "kamvas"],
+      "downloadUrl": "https://www.huion.com/download/",
+      "supportUrl": "https://support.huion.com/",
+      "notes": "Huion 绘王数位板与数位屏驱动。"
+    },
+    {
+      "id": "elgato-downloads",
+      "vendor": "Elgato",
+      "name": "Elgato Drivers / Apps",
+      "category": "capture",
+      "deviceTypes": ["采集卡", "直播设备"],
+      "aliases": ["elgato", "stream deck", "capture", "采集卡", "直播", "wave link"],
+      "downloadUrl": "https://www.elgato.com/downloads",
+      "supportUrl": "https://help.elgato.com/",
+      "notes": "Stream Deck、采集卡、Wave Link 等软件驱动。"
+    }
+  ]
+}

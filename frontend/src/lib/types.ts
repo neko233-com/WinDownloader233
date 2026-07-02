@@ -23,6 +23,17 @@ export interface Progress {
   status: string;
   percent: number;
   message: string;
+  startedAt?: string;
+  updatedAt?: string;
+  logLines?: number;
+  exitCode?: number;
+}
+
+export interface LogEntry {
+  time: string;
+  toolId: string;
+  level: string;
+  message: string;
 }
 
 export interface MirrorConfig {
