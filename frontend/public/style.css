@@ -1,0 +1,91 @@
+/* UniGetUI233 Global Styles */
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  background: #0f1117;
+  color: #e1e4e8;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color-scheme: dark;
+}
+
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  --wails-draggable: drag;
+}
+
+#app {
+  height: 100%;
+  display: contents;
+}
+
+/* Opt interactive elements out of drag */
+input, button, a, .sidebar, .tool-card, .settings-panel, .overlay {
+  --wails-draggable: no-drag;
+}
+
+input {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #2d3148;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
+
+/* Selection */
+::selection {
+  background: #58a6ff33;
+  color: #e1e4e8;
+}
+
+/* Focus */
+:focus-visible {
+  outline: 2px solid #58a6ff;
+  outline-offset: 2px;
+}
+
+/* Link reset */
+a {
+  color: #58a6ff;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* Button reset */
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* Input reset */
+input {
+  font-family: inherit;
+}

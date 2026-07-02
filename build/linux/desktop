@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name=UniGetUI233
+Comment=Game Dev Toolkit Manager
+# The Exec line includes %u to pass the URL to the application
+Exec=/usr/local/bin/unigetui233.exe %u
+Terminal=false
+Type=Application
+Icon=unigetui233.exe
+Categories=Utility;
+StartupWMClass=unigetui233.exe
+
+ 
